@@ -1,0 +1,31 @@
+from scapy.all import IP, TCP, sr1   #IP: Used to construct IP packets. TCP: Used to create TCP packets. sr1: Sends a single packet and waits for a response.
+
+def scan_ports(target, ports): #target: The IP address to scan. ports: A list or range of port numbers to check.
+    open_ports = []
+    for port in ports:
+        pkt = IP(dst=target) / TCP(dport=port, flags='S') #Constructs a TCP SYN packet targeting the specific port (flags='S').
+        response = sr1(pkt, timeout=1, verbose=False) # Sends the packet and waits for a response
+
+        if response:
+            if response.haslayer(TCP) and response[TCP].flags == 0x12: #If the response contains a TCP layer with the SYN-ACK flag (0x12), the port is open
+                open_ports.append(port)
+                #Send RST to close the connection
+                sr1(IP(dst=target) / TCP(dport=port, flags='R'), timeout=1, verbose=False)
+    return open_ports
+
+
+if __name__ == "__main__":
+    target_ip = input("Enter the target IP: ")
+    ports_to_scan = range(1,1025) #Common ports
+    print(f"Scanning {target_ip} for open ports...")
+    open_ports = scan_ports(target_ip, ports_to_scan)
+
+    if open_ports:
+        print(f"Open ports found: {open_ports}")
+    else:
+        print("No open ports found.")
+
+        
+
+
+
