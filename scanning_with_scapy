@@ -1,4 +1,4 @@
-from scapy.all import IP, TCP, sr1   #IP: Used to construct IP packets. TCP: Used to create TCP packets. sr1: Sends a single packet and waits for a response.
+from scapy.all import IP, TCP, sr1, sniff   #IP: Used to construct IP packets. TCP: Used to create TCP packets. sr1: Sends a single packet and waits for a response.
 
 def scan_ports(target, ports): #target: The IP address to scan. ports: A list or range of port numbers to check.
     open_ports = []
@@ -13,6 +13,12 @@ def scan_ports(target, ports): #target: The IP address to scan. ports: A list or
                 sr1(IP(dst=target) / TCP(dport=port, flags='R'), timeout=1, verbose=False)
     return open_ports
 
+def capture_traffic(filter_exp, capture_count):
+    print(f"Sniffing with filter '{filter_exp}' for {capture_count} packets...")
+    packets = sniff(filter=filter_exp, count=capture_count) #Capture packets based on filter and count
+    print(f"Capture {len(packets)} packets.")
+    return packets
+
 
 if __name__ == "__main__":
     target_ip = input("Enter the target IP: ")
@@ -25,7 +31,20 @@ if __name__ == "__main__":
     else:
         print("No open ports found.")
 
-        
+
+#Capture traffic for the scanned target
+filter_expression = f"tcp and host {target_ip}" #Filter traffic for TCP packets to/from the target IP
+num_packets_to_capture = 10 #Limite the number of packets to capture
+captured_packets =capture_traffic(filter_expression, num_packets_to_capture)
+
+
+#Display details of captured packets
+for i, packet in enumerate(captured_packets, 1):
+    print(f"Packet {i}: {packet.summary()}")
+
+
+
+
 
 
 
