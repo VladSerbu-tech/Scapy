@@ -44,6 +44,9 @@ for i, packet in enumerate(captured_packets, 1):
 
 def main_acction():
     return print(2+2)
+def ():
+    return
+
 
 
 
