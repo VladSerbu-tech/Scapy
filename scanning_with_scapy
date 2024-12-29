@@ -42,7 +42,9 @@ captured_packets =capture_traffic(filter_expression, num_packets_to_capture)
 for i, packet in enumerate(captured_packets, 1):
     print(f"Packet {i}: {packet.summary()}")
 
-print()
+
+
+
 
 
 
