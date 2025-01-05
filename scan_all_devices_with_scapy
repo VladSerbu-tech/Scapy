@@ -1,0 +1,52 @@
+from scapy.all import ARP, Ether, srp
+import requests
+
+
+def get_http_devices_info(ip):
+    try:
+        response = requests.get(f"http://{ip}",timeout=1)
+        if "Server" in response.headers:
+            return response.headers["Server"] #Server header often includes model info
+        return "Web server detected"
+    except:
+        return "No HTTP response"
+
+
+def scan_network(ip_range):
+    #Create an ARP request and broadcast it
+    arp_request = ARP(pdst=ip_range)
+    broadcast = Ether(dst="ff:ff:ff:ff:ff:ff")
+    packet = broadcast / arp_request
+
+#Send the packet and capture responses
+    answered_list = srp(packet, timeout=2, verbose=False)[0]
+
+    devices = []
+
+    for sent, received in answered_list:
+        http_info = get_http_devices_info(received.psrc) #Query HTTP headers    
+        devices.append({'ip': received.psrc, 'mac': received.hwsrc})
+
+    return devices
+
+
+if __name__ == '__main__':
+    # Replace with your network's IP range
+    network = input("Enter your network range: ")
+    print(f"Scanning network :{network}")
+
+    devices = scan_network(network)
+
+    if devices:
+        print("\nDevices Found:")
+        print(f"{'IP Address':<20}{'MAC Address':<20}")
+        print("-" * 40)
+        for device in devices:
+            print(f"{device['ip']:<20}{device['mac']:<20}")
+
+        else:
+            print("No devices found.")
+
+
+
+                                                             
